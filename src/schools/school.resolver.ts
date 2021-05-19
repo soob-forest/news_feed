@@ -37,7 +37,6 @@ export class SchoolResolver {
   @UseGuards(SchoolManagerGuard)
   async updateSchool(
     @Args('input') updateSchoolInput: UpdateSchoolInput,
-    @AuthUser() user: User,
   ): Promise<UpdateSchoolOutput> {
     return this.schoolService.updateSchool(updateSchoolInput);
   }
@@ -47,7 +46,6 @@ export class SchoolResolver {
   @UseGuards(SchoolManagerGuard)
   async deleteSchool(
     @Args('input') deleteSchoolInput: DeleteSchoolInput,
-    @AuthUser() user: User,
   ): Promise<DeleteSchoolOutput> {
     return this.schoolService.deleteSchool(deleteSchoolInput);
   }
