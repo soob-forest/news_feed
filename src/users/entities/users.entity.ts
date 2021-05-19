@@ -18,7 +18,7 @@ registerEnumType(Role, { name: 'Role' });
 @InputType('UsersInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
-export class Users extends CoreEntity {
+export class User extends CoreEntity {
   @Column()
   @Field((type) => String)
   @IsEmail()
