@@ -4,6 +4,8 @@ import { SchoolService } from 'src/schools/school.service';
 import { User } from 'src/users/entities/users.entity';
 import { Repository } from 'typeorm';
 import { CreateNewsInput } from './dtos/create-news.dto';
+import { NewsOutput } from './dtos/news.dto';
+import { UpdateNewsInput, UpdateNewsOutput } from './dtos/update-news.dto';
 import { News } from './entites/news.entity';
 
 @Injectable()
@@ -12,6 +14,18 @@ export class NewsService {
     @InjectRepository(News) private readonly news: Repository<News>,
     private readonly schoolService: SchoolService,
   ) {}
+
+  async findById(id: number): Promise<NewsOutput> {
+    try {
+      const news = await this.news.findOneOrFail(id, { relations: ['user'] });
+      return {
+        ok: true,
+        news,
+      };
+    } catch (error) {
+      return { ok: false, error: 'News Not Found' };
+    }
+  }
 
   async createNews(user: User, { schoolId, title, content }: CreateNewsInput) {
     try {
