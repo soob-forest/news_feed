@@ -5,12 +5,22 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+} from 'typeorm';
 import { IsString, IsEnum, IsEmail } from 'class-validator';
 import { School } from 'src/schools/entities/schools.entity';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
 import { UserSchoolFollow } from 'src/user-school-follow/entites/user-school-follow.entity';
 import { News } from 'src/news/entites/news.entity';
+import { InternalServerErrorException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 export enum Role {
   MANAGER = 'MANAGER',
@@ -52,4 +62,25 @@ export class User extends CoreEntity {
 
   @OneToMany((type) => News, (news) => news.user)
   writingNews: News[];
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashPassword(): Promise<void> {
+    if (this.password) {
+      try {
+        this.password = await bcrypt.hash(this.password, 10);
+      } catch (e) {
+        throw new InternalServerErrorException();
+      }
+    }
+  }
+
+  async checkPassword(aPassword: string): Promise<boolean> {
+    try {
+      const ok = await bcrypt.compare(aPassword, this.password);
+      return ok;
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+  }
 }
