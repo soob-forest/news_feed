@@ -11,6 +11,7 @@ import {
   DeleteSchoolInput,
   DeleteSchoolOutput,
 } from './dtos/delete-school.dto';
+import { SchoolOutput } from './dtos/school.dto';
 import {
   UpdateSchoolInput,
   UpdateSchoolOutput,
@@ -25,6 +26,18 @@ export class SchoolService {
     private readonly userSchoolManage: Repository<UserSchoolManage>,
     private readonly connection: Connection,
   ) {}
+
+  async findById(id:number): Promise<SchoolOutput>{
+    try{
+      const school = await this.school.findOneOrFail({id})
+      return{
+        ok:true,
+        school
+      }
+    }catch(error){
+      return { ok: false, error: 'School Not Found' };
+    }
+  }
 
   async createSchool(
     user: User,
