@@ -7,6 +7,10 @@ import {
   CreateSchoolInput,
   CreateSchoolOutput,
 } from './dtos/create-school.dto';
+import {
+  UpdateSchoolInput,
+  UpdateSchoolOutput,
+} from './dtos/update-school.dto';
 import { School } from './entities/schools.entity';
 
 @Injectable()
@@ -55,6 +59,32 @@ export class SchoolService {
       };
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async updateSchool(
+    user: User,
+    updateSchoolInput: UpdateSchoolInput,
+  ): Promise<UpdateSchoolOutput> {
+    try {
+      const school = await this.school.findOne({
+        id: updateSchoolInput.schoolId,
+      });
+
+      await this.school.save({
+        id: school.id,
+        ...updateSchoolInput,
+      });
+
+      return {
+        schoolId: school.id,
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: "Can't update school",
+      };
     }
   }
 }
