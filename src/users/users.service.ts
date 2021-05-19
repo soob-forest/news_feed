@@ -1,19 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
 import {
   CreateAccountInput,
   CreateAccountOutput,
 } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+import { UserProfileOutput } from './dtos/user-profile.dto';
 import { User } from './entities/users.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
-    private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
   ) {}
   async createAccount({
     email,
@@ -55,7 +56,7 @@ export class UserService {
         };
       }
 
-      const token = await this.authService.sign(user.id);
+      const token = await this.jwtService.sign({ id: user.id });
       return {
         ok: true,
         token,
