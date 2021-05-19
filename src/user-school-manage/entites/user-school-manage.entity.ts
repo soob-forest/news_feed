@@ -8,9 +8,13 @@ import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 export class UserSchoolManage {
   @PrimaryGeneratedColumn()
   id: number;
-  @ManyToOne((type) => User, (user) => user.userSchoolFollow)
+  @ManyToOne((type) => User, (user) => user.userSchoolFollow, {
+    onDelete: 'CASCADE',
+  })
   user?: User;
 
-  @ManyToOne((type) => School, (school) => school.userSchoolFollow)
+  @ManyToOne((type) => School, (school) => school.userSchoolFollow, {
+    onDelete: 'CASCADE',
+  })
   school?: School;
 }
