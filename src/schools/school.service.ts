@@ -8,6 +8,10 @@ import {
   CreateSchoolOutput,
 } from './dtos/create-school.dto';
 import {
+  DeleteSchoolInput,
+  DeleteSchoolOutput,
+} from './dtos/delete-school.dto';
+import {
   UpdateSchoolInput,
   UpdateSchoolOutput,
 } from './dtos/update-school.dto';
@@ -63,7 +67,6 @@ export class SchoolService {
   }
 
   async updateSchool(
-    user: User,
     updateSchoolInput: UpdateSchoolInput,
   ): Promise<UpdateSchoolOutput> {
     try {
@@ -84,6 +87,23 @@ export class SchoolService {
       return {
         ok: false,
         error: "Can't update school",
+      };
+    }
+  }
+
+  async deleteSchool({
+    schoolId,
+  }: DeleteSchoolInput): Promise<DeleteSchoolOutput> {
+    try {
+      await this.school.delete(schoolId);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: "Can't delete school",
       };
     }
   }
