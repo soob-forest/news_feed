@@ -50,4 +50,32 @@ export class NewsService {
       };
     }
   }
+
+  async updateNews(
+    updateNewsInput: UpdateNewsInput,
+  ): Promise<UpdateNewsOutput> {
+    try {
+      const news = await this.news.findOne({
+        id: updateNewsInput.newsId,
+      });
+      if (!news)
+        return {
+          ok: false,
+          error: 'not found news',
+        };
+      await this.news.save({
+        id: news.id,
+        ...updateNewsInput,
+      });
+      return {
+        newsId: news.id,
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: "Can't update news",
+      };
+    }
+  }
 }
