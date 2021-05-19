@@ -5,7 +5,7 @@ import { IsString } from 'class-validator';
 import { School } from 'src/schools/entities/schools.entity';
 import { User } from 'src/users/entities/users.entity';
 
-@InputType('SchoolInputType', { isAbstract: true })
+@InputType('NewsInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class News extends CoreEntity {
@@ -19,7 +19,9 @@ export class News extends CoreEntity {
   @IsString()
   content: string;
 
-  @ManyToOne((type) => School, (school) => school.news)
+  @ManyToOne((type) => School, (school) => school.news, {
+    onDelete: 'CASCADE',
+  })
   @Field((type) => School, { nullable: true })
   school?: School;
 

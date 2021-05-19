@@ -16,6 +16,11 @@ export class School extends CoreEntity {
   @IsString()
   name: string;
 
+  @Column()
+  @Field((type) => String)
+  @IsString()
+  address: string;
+
   @OneToMany((type) => News, (news) => news.school)
   @Field((type) => [News])
   news: News[];

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
 import { Repository } from 'typeorm';
 import {
   CreateAccountInput,
@@ -14,6 +15,8 @@ import { User } from './entities/users.entity';
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(UserSchoolManage)
+    private readonly userSchoolManage: Repository<UserSchoolManage>,
     private readonly jwtService: JwtService,
   ) {}
   async createAccount({
@@ -79,5 +82,15 @@ export class UserService {
     } catch (error) {
       return { ok: false, error: 'User Not Found' };
     }
+  }
+
+  async isManagingSchool({ userId, schoolId }): Promise<boolean> {
+    const exists = await this.userSchoolManage
+      .createQueryBuilder()
+      .where('userId = :userId', { userId })
+      .andWhere('schoolId= :schoolId', { schoolId })
+      .getOne();
+
+    return exists ? true : false;
   }
 }
