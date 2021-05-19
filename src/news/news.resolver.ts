@@ -7,11 +7,13 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
+import { NewsGuard } from 'src/auth/auth-news.guard';
 import { UserRole } from 'src/auth/auth-role.decorator';
 import { SchoolManagerGuard } from 'src/auth/auth-school-manager.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { User } from 'src/users/entities/users.entity';
 import { CreateNewsInput, CreateNewsOutput } from './dtos/create-news.dto';
+import { UpdateNewsInput, UpdateNewsOutput } from './dtos/update-news.dto';
 import { News } from './entites/news.entity';
 import { NewsService } from './news.service';
 
@@ -27,5 +29,14 @@ export class NewsResolver {
     @AuthUser() user: User,
   ): Promise<CreateNewsOutput> {
     return this.newsService.createNews(user, createNewsInput);
+  }
+
+  @Mutation((returns) => UpdateNewsOutput)
+  @UserRole(['MANAGER'])
+  @UseGuards(NewsGuard)
+  async updateNews(
+    @Args('input') updateNewsInput: UpdateNewsInput,
+  ): Promise<UpdateNewsOutput> {
+    return this.newsService.updateNews(updateNewsInput);
   }
 }
