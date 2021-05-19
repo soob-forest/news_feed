@@ -4,6 +4,7 @@ import { SchoolService } from 'src/schools/school.service';
 import { User } from 'src/users/entities/users.entity';
 import { Repository } from 'typeorm';
 import { CreateNewsInput } from './dtos/create-news.dto';
+import { DeleteNewsInput, DeleteNewsOutput } from './dtos/delete-news.dto';
 import { NewsOutput } from './dtos/news.dto';
 import { UpdateNewsInput, UpdateNewsOutput } from './dtos/update-news.dto';
 import { News } from './entites/news.entity';
@@ -75,6 +76,30 @@ export class NewsService {
       return {
         ok: false,
         error: "Can't update news",
+      };
+    }
+  }
+
+  async deleteNews({ newsId }: DeleteNewsInput): Promise<DeleteNewsOutput> {
+    try {
+      const news = await this.news.findOne({
+        id: newsId,
+      });
+      if (!news)
+        return {
+          ok: false,
+          error: 'not found news',
+        };
+      await this.news.delete({
+        id: news.id,
+      });
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: "Can't delete news",
       };
     }
   }
