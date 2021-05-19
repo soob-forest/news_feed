@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { School } from 'src/schools/entities/schools.entity';
+import { UserSchoolFollow } from 'src/user-school-follow/entites/user-school-follow.entity';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
 import { Repository } from 'typeorm';
 import {
   CreateAccountInput,
   CreateAccountOutput,
 } from './dtos/create-account.dto';
+import {
+  FollowSchoolInput,
+  FollowSchoolOutput,
+} from './dtos/follow-school.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { UserProfileOutput } from './dtos/user-profile.dto';
 import { User } from './entities/users.entity';
@@ -17,6 +23,9 @@ export class UserService {
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(UserSchoolManage)
     private readonly userSchoolManage: Repository<UserSchoolManage>,
+    @InjectRepository(UserSchoolFollow)
+    private readonly userSchoolFollow: Repository<UserSchoolFollow>,
+    @InjectRepository(School) private readonly school: Repository<School>,
     private readonly jwtService: JwtService,
   ) {}
   async createAccount({
@@ -92,5 +101,27 @@ export class UserService {
       .getOne();
 
     return exists ? true : false;
+  }
+
+  async followSchool(
+    user: User,
+    { schoolId }: FollowSchoolInput,
+  ): Promise<FollowSchoolOutput> {
+    try {
+      const school = await this.school.findOneOrFail({ id: schoolId });
+
+      if (!school) {
+        return { ok: false, error: 'There is no school' };
+      }
+
+      await this.userSchoolFollow.save(
+        this.userSchoolFollow.create({ user, school }),
+      );
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return { ok: false, error: "Can't follow school" };
+    }
   }
 }
