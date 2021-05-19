@@ -9,6 +9,10 @@ import {
   CreateSchoolOutput,
 } from './dtos/create-school.dto';
 import {
+  DeleteSchoolInput,
+  DeleteSchoolOutput,
+} from './dtos/delete-school.dto';
+import {
   UpdateSchoolInput,
   UpdateSchoolOutput,
 } from './dtos/update-school.dto';
@@ -35,6 +39,16 @@ export class SchoolResolver {
     @Args('input') updateSchoolInput: UpdateSchoolInput,
     @AuthUser() user: User,
   ): Promise<UpdateSchoolOutput> {
-    return this.schoolService.updateSchool(user, updateSchoolInput);
+    return this.schoolService.updateSchool(updateSchoolInput);
+  }
+
+  @Mutation((returns) => UpdateSchoolOutput)
+  @UserRole(['MANAGER'])
+  @UseGuards(SchoolManagerGuard)
+  async deleteSchool(
+    @Args('input') deleteSchoolInput: DeleteSchoolInput,
+    @AuthUser() user: User,
+  ): Promise<DeleteSchoolOutput> {
+    return this.schoolService.deleteSchool(deleteSchoolInput);
   }
 }
