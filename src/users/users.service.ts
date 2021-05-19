@@ -14,6 +14,10 @@ import {
   FollowSchoolOutput,
 } from './dtos/follow-school.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+import {
+  UnFollowSchoolInput,
+  UnFollowSchoolOutput,
+} from './dtos/unfollow-school.dto';
 import { UserProfileOutput } from './dtos/user-profile.dto';
 import { User } from './entities/users.entity';
 
@@ -122,6 +126,32 @@ export class UserService {
       };
     } catch (error) {
       return { ok: false, error: "Can't follow school" };
+    }
+  }
+
+  async unFollowSchool(
+    user: User,
+    { schoolId }: UnFollowSchoolInput,
+  ): Promise<UnFollowSchoolOutput> {
+    try {
+      const school = await this.school.findOne({ id: schoolId });
+      if (!school) {
+        return { ok: false, error: 'There is no school' };
+      }
+
+      const follow = await this.userSchoolFollow.findOne({ user, school });
+
+      if (!follow) {
+        return { ok: false, error: 'Not found follow' };
+      }
+
+      follow.cancel();
+      await this.userSchoolFollow.save(follow);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return { ok: false, error: "Can't unFollow school" };
     }
   }
 }
