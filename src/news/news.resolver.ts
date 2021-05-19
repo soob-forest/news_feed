@@ -13,6 +13,7 @@ import { SchoolManagerGuard } from 'src/auth/auth-school-manager.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { User } from 'src/users/entities/users.entity';
 import { CreateNewsInput, CreateNewsOutput } from './dtos/create-news.dto';
+import { DeleteNewsInput, DeleteNewsOutput } from './dtos/delete-news.dto';
 import { UpdateNewsInput, UpdateNewsOutput } from './dtos/update-news.dto';
 import { News } from './entites/news.entity';
 import { NewsService } from './news.service';
@@ -38,5 +39,14 @@ export class NewsResolver {
     @Args('input') updateNewsInput: UpdateNewsInput,
   ): Promise<UpdateNewsOutput> {
     return this.newsService.updateNews(updateNewsInput);
+  }
+
+  @Mutation((returns) => UpdateNewsOutput)
+  @UserRole(['MANAGER'])
+  @UseGuards(NewsGuard)
+  async deleteNews(
+    @Args('input') deleteNewsInput: DeleteNewsInput,
+  ): Promise<DeleteNewsOutput> {
+    return this.newsService.deleteNews(deleteNewsInput);
   }
 }
