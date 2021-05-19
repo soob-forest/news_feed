@@ -1,11 +1,17 @@
+import { UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { UserRole } from 'src/auth/auth-role.decorator';
+import { SchoolManagerGuard } from 'src/auth/auth-school-manager.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { User } from 'src/users/entities/users.entity';
 import {
   CreateSchoolInput,
   CreateSchoolOutput,
 } from './dtos/create-school.dto';
+import {
+  UpdateSchoolInput,
+  UpdateSchoolOutput,
+} from './dtos/update-school.dto';
 import { School } from './entities/schools.entity';
 import { SchoolService } from './school.service';
 
@@ -20,5 +26,15 @@ export class SchoolResolver {
     @AuthUser() user: User,
   ): Promise<CreateSchoolOutput> {
     return this.schoolService.createSchool(user, createSchoolInput);
+  }
+
+  @Mutation((returns) => UpdateSchoolOutput)
+  @UserRole(['MANAGER'])
+  @UseGuards(SchoolManagerGuard)
+  async updateSchool(
+    @Args('input') updateSchoolInput: UpdateSchoolInput,
+    @AuthUser() user: User,
+  ): Promise<UpdateSchoolOutput> {
+    return this.schoolService.updateSchool(user, updateSchoolInput);
   }
 }
