@@ -40,4 +40,9 @@ export class UserSchoolFollow {
     onDelete: 'CASCADE',
   })
   school?: School;
+
+  cancel() {
+    this.isCancel = true;
+    this.cancelDatetime = new Date();
+  }
 }
