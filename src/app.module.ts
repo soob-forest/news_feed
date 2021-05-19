@@ -12,6 +12,8 @@ import { News } from './news/entites/news.entity';
 import { UserSchoolFollowModule } from './user-school-follow/user-school-follow.module';
 import { UserSchoolManage } from './user-school-manage/entites/user-school-manage.entity';
 import { UserSchoolFollow } from './user-school-follow/entites/user-school-follow.entity';
+import { UserSchoolManageModule } from './user-school-manage/user-school-manage.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +31,12 @@ import { UserSchoolFollow } from './user-school-follow/entites/user-school-follo
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      context: ({ req, connection }) => {
+        const TOKEN_KEY = 'authorization';
+        return {
+          token: req ? req.headers[TOKEN_KEY] : connection.context[TOKEN_KEY],
+        };
+      },
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -41,10 +49,12 @@ import { UserSchoolFollow } from './user-school-follow/entites/user-school-follo
       synchronize: true,
       logging: process.env.NODE_ENV !== 'prod',
     }),
+    AuthModule,
     UsersModule,
     SchoolsModule,
     NewsModule,
     UserSchoolFollowModule,
+    UserSchoolManageModule,
   ],
 })
 export class AppModule {}
