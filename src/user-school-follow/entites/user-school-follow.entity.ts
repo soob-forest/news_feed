@@ -1,24 +1,33 @@
 import { Field } from '@nestjs/graphql';
 import { IsBoolean, IsDate } from 'class-validator';
+import { truncateSync } from 'fs';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { School } from 'src/schools/entities/schools.entity';
 import { User } from 'src/users/entities/users.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 
 @Entity()
+@Unique('user_school_uniq', ['user', 'school'])
 export class UserSchoolFollow {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @CreateDateColumn()
   @IsDate()
   startDatetime?: Date;
 
-  @Column()
+  @Column({ nullable: true })
   @IsDate()
   cancelDatetime?: Date;
 
-  @Column()
+  @Column({ default: false })
   @IsBoolean()
   isCancel?: boolean;
 
