@@ -10,6 +10,7 @@ import { IsString, IsEnum, IsEmail } from 'class-validator';
 import { School } from 'src/schools/entities/schools.entity';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
 import { UserSchoolFollow } from 'src/user-school-follow/entites/user-school-follow.entity';
+import { News } from 'src/news/entites/news.entity';
 
 export enum Role {
   MANAGER = 'MANAGER',
@@ -48,4 +49,7 @@ export class User extends CoreEntity {
     (userSchoolFollow) => userSchoolFollow.user,
   )
   userSchoolFollow: UserSchoolFollow[];
+
+  @OneToMany((type) => News, (news) => news.user)
+  writingNews: News[];
 }
