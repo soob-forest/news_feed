@@ -10,6 +10,10 @@ import {
   FollowSchoolOutput,
 } from './dtos/follow-school.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+import {
+  UnFollowSchoolInput,
+  UnFollowSchoolOutput,
+} from './dtos/unfollow-school.dto';
 import { User } from './entities/users.entity';
 import { UserService } from './users.service';
 
@@ -42,5 +46,14 @@ export class UserResolver {
     @AuthUser() user: User,
   ): Promise<FollowSchoolOutput> {
     return this.userService.followSchool(user, followSchoolInput);
+  }
+
+  @Mutation((returns) => FollowSchoolOutput)
+  @UserRole(['STUDENT'])
+  async unFollowSchool(
+    @Args('input') unFollowSchoolInput: UnFollowSchoolInput,
+    @AuthUser() user: User,
+  ): Promise<UnFollowSchoolOutput> {
+    return this.userService.unFollowSchool(user, unFollowSchoolInput);
   }
 }
