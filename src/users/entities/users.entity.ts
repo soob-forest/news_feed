@@ -70,6 +70,9 @@ export class User extends CoreEntity {
   @Field((type) => [School], { nullable: true })
   managingSchools: School[];
 
+  @Field((type) => [News], { nullable: true })
+  newsFeeds: News[];
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
