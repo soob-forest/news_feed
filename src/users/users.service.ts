@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { News } from 'src/news/entites/news.entity';
 import { School } from 'src/schools/entities/schools.entity';
 import { UserSchoolFollow } from 'src/user-school-follow/entites/user-school-follow.entity';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
@@ -13,6 +14,8 @@ import {
   FollowSchoolInput,
   FollowSchoolOutput,
 } from './dtos/follow-school.dto';
+import { FollowingSchoolOutput } from './dtos/following-school.dto';
+
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import {
   UnFollowSchoolInput,
@@ -30,6 +33,7 @@ export class UserService {
     @InjectRepository(UserSchoolFollow)
     private readonly userSchoolFollow: Repository<UserSchoolFollow>,
     @InjectRepository(School) private readonly school: Repository<School>,
+    @InjectRepository(News) private readonly news: Repository<News>,
     private readonly jwtService: JwtService,
   ) {}
   async createAccount({
@@ -152,6 +156,23 @@ export class UserService {
       };
     } catch (error) {
       return { ok: false, error: "Can't unFollow school" };
+    }
+  }
+
+  async findFollowingSchools(user: User): Promise<FollowingSchoolOutput> {
+    try {
+      const schools = await this.school
+        .createQueryBuilder('school')
+        .leftJoin('school.userSchoolFollow', 'userSchoolFollow')
+        .where('userSchoolFollow.userId = :userId', { userId: user.id })
+        .getMany();
+
+      return {
+        ok: true,
+        schools,
+      };
+    } catch (error) {
+      return { ok: false, error: '' };
     }
   }
 }
