@@ -70,4 +70,10 @@ export class UserResolver {
   ): Promise<UnFollowSchoolOutput> {
     return this.userService.unFollowSchool(user, unFollowSchoolInput);
   }
+
+  @ResolveField()
+  async followingSchools(@Parent() user: User): Promise<School[]> {
+    const { schools } = await this.userService.findFollowingSchools(user);
+    return schools;
+  }
 }
