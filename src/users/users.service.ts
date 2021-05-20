@@ -22,6 +22,8 @@ import {
   UnFollowSchoolOutput,
 } from './dtos/unfollow-school.dto';
 import { UserProfileOutput } from './dtos/user-profile.dto';
+import { NewsFeedsOutput } from './dtos/news.dto';
+
 import { User } from './entities/users.entity';
 
 @Injectable()
@@ -165,6 +167,7 @@ export class UserService {
         .createQueryBuilder('school')
         .leftJoin('school.userSchoolFollow', 'userSchoolFollow')
         .where('userSchoolFollow.userId = :userId', { userId: user.id })
+        .andWhere('userSchoolFollow.isCancel = :isCancel', { isCancel: false })
         .getMany();
 
       return {
@@ -172,7 +175,32 @@ export class UserService {
         schools,
       };
     } catch (error) {
-      return { ok: false, error: '' };
+      return { ok: false, error: "Can't find Follwing Schools" };
+    }
+  }
+
+  async findNewsFeeds(user: User, { page }): Promise<NewsFeedsOutput> {
+    try {
+      const news = await this.news
+        .createQueryBuilder('news')
+        .leftJoin('news.school', 'school')
+        .leftJoin('school.userSchoolFollow', 'userSchoolFollow')
+        .where('userSchoolFollow.userId = :userId', { userId: user.id })
+        .andWhere('userSchoolFollow.startDatetime <= news.CreatedAt')
+        .andWhere(
+          'IF( userSchoolFollow.cancelDatetime IS NOT NULL, userSchoolFollow.cancelDatetime > news.CreatedAt, true)',
+        )
+        .orderBy('news.createdAt', 'DESC')
+        .take(30)
+        .skip(page * 30)
+        .getMany();
+
+      return {
+        ok: true,
+        news,
+      };
+    } catch (error) {
+      return { ok: false, error: "Cat't Find News Feeds" };
     }
   }
 }
