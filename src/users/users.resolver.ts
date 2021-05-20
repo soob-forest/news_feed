@@ -1,6 +1,15 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Args,
+  Mutation,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { UserRole } from 'src/auth/auth-role.decorator';
 import { AuthUser } from 'src/auth/auth-user.decorator';
+import { News } from 'src/news/entites/news.entity';
+import { School } from 'src/schools/entities/schools.entity';
 import {
   CreateAccountInput,
   CreateAccountOutput,
@@ -9,7 +18,9 @@ import {
   FollowSchoolInput,
   FollowSchoolOutput,
 } from './dtos/follow-school.dto';
+import { FollowingSchoolOutput } from './dtos/following-school.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+import { MeOutput } from './dtos/me.dto';
 import {
   UnFollowSchoolInput,
   UnFollowSchoolOutput,
@@ -21,10 +32,13 @@ import { UserService } from './users.service';
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  @Query((returns) => String)
+  @Query((returns) => MeOutput)
   @UserRole(['ANY'])
-  userTest(@AuthUser() authUser: User) {
-    return 'true';
+  me(@AuthUser() user: User): MeOutput {
+    return {
+      ok: true,
+      user: user,
+    };
   }
 
   @Mutation((returns) => CreateAccountOutput)
