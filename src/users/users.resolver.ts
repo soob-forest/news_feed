@@ -76,4 +76,15 @@ export class UserResolver {
     const { schools } = await this.userService.findFollowingSchools(user);
     return schools;
   }
+
+  @ResolveField()
+  async newsFeeds(
+    @Parent() user: User,
+    @Args('page', { nullable: true }) page: Number = 0,
+  ): Promise<News[]> {
+    const { news } = await this.userService.findNewsFeeds(user, {
+      page,
+    });
+    return news;
+  }
 }
