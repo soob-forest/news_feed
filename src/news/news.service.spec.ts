@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { School } from 'src/schools/entities/schools.entity';
 import { SchoolService } from 'src/schools/school.service';
 import { SchoolsModule } from 'src/schools/schools.module';
+import { User } from 'src/users/entities/users.entity';
 import { Repository } from 'typeorm';
 import { News } from './entites/news.entity';
 import { NewsService } from './news.service';
@@ -30,9 +31,12 @@ const mockSchoolService = () => ({
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
+type MockSchoolService = Partial<Record<keyof SchoolService, jest.Mock>>;
+
 describe('NewsService', () => {
   let service: NewsService;
   let newsRepository: MockRepository<News>;
+  let schoolService: MockSchoolService;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -46,6 +50,7 @@ describe('NewsService', () => {
       ],
     }).compile();
     service = module.get<NewsService>(NewsService);
+    schoolService = module.get(SchoolService);
     newsRepository = module.get(getRepositoryToken(News));
   });
 
@@ -69,7 +74,45 @@ describe('NewsService', () => {
       expect(result).toEqual({ ok: false, error: 'News Not Found' });
     });
   });
-  it.todo('createNews');
+  describe('createNews', () => {
+    const user = new User();
+    const createNewsArgs = { schoolId: 1, title: 'title', content: 'content' };
+
+    it('should fail if school not exists', async () => {
+      schoolService.findById.mockResolvedValue({
+        ok: false,
+        error: "Can't create school",
+      });
+
+      const result = await service.createNews(user, createNewsArgs);
+
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'There is no school',
+      });
+    });
+
+    it('should create a news', async () => {
+      schoolService.findById.mockResolvedValue({ school: { id: 1 } });
+
+      newsRepository.create.mockReturnValue(createNewsArgs);
+
+      newsRepository.save.mockResolvedValue({ id: 1, ...createNewsArgs });
+
+      const result = await service.createNews(user, createNewsArgs);
+
+      expect(result).toMatchObject({
+        ok: true,
+        newsId: 1,
+      });
+    });
+
+    it('should fail on exception ', async () => {
+      schoolService.findById.mockRejectedValue(new Error());
+      const result = await service.createNews(user, createNewsArgs);
+      expect(result).toEqual({ ok: false, error: "Can't create school" });
+    });
+  });
   it.todo('updateNews');
   it.todo('deleteNews');
 });
