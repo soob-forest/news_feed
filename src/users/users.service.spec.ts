@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { News } from 'src/news/entites/news.entity';
 import { School } from 'src/schools/entities/schools.entity';
+import { SchoolService } from 'src/schools/school.service';
 import { UserSchoolFollow } from 'src/user-school-follow/entites/user-school-follow.entity';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
 import { Repository } from 'typeorm';
@@ -332,6 +333,55 @@ describe('UserService', () => {
       expect(result).toEqual({ ok: false, error: "Can't unFollow school" });
     });
   });
-  it.todo('findFollowingSchools');
+
+  describe('findFollowingSchools', () => {
+    const user = new User();
+    user.id = 1;
+
+    const schools = [
+      {
+        id: 1,
+        name: '성신고',
+        address: '울산광역시',
+      },
+      {
+        id: 2,
+        name: '울산고',
+        address: '울산광역시',
+      },
+    ];
+
+    it('should success get following schools', async () => {
+      schoolRepository
+        .createQueryBuilder()
+        .leftJoin('school.userSchoolFollow', 'userSchoolFollow')
+        .where('userSchoolFollow.userId = :userId', { userId: user.id })
+        .andWhere('userSchoolFollow.isCancel = :isCancel', { isCancel: false })
+        .getMany.mockResolvedValue(schools);
+
+      const result = await service.findFollowingSchools(user);
+
+      expect(result).toMatchObject({
+        ok: true,
+        schools,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      schoolRepository
+        .createQueryBuilder()
+        .leftJoin('school.userSchoolFollow', 'userSchoolFollow')
+        .where('userSchoolFollow.userId = :userId', { userId: user.id })
+        .andWhere('userSchoolFollow.isCancel = :isCancel', { isCancel: false })
+        .getMany.mockRejectedValue(new Error());
+
+      const result = await service.findFollowingSchools(user);
+
+      expect(result).toEqual({
+        ok: false,
+        error: "Can't find Follwing Schools",
+      });
+    });
+  });
   it.todo('findNewsFeeds');
 });
