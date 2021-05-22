@@ -152,5 +152,37 @@ describe('NewsService', () => {
       expect(result).toEqual({ ok: false, error: "Can't update news" });
     });
   });
-  it.todo('deleteNews');
+  describe('deleteNews', () => {
+    const deleteNewsArg = {
+      newsId: 1,
+    };
+
+    it('should fail if news not exists', async () => {
+      newsRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.deleteNews(deleteNewsArg);
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'not found news',
+      });
+    });
+
+    it('should delete', async () => {
+      newsRepository.findOne.mockResolvedValue({ id: 1 });
+
+      const result = await service.deleteNews(deleteNewsArg);
+      expect(result).toMatchObject({
+        ok: true,
+      });
+    });
+    it('should fail on exception', async () => {
+      newsRepository.findOne.mockRejectedValue(new Error());
+
+      const result = await service.deleteNews(deleteNewsArg);
+      expect(result).toMatchObject({
+        ok: false,
+        error: "Can't delete news",
+      });
+    });
+  });
 });
