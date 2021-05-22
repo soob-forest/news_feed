@@ -15,6 +15,15 @@ const mockRepository = () => ({
   create: jest.fn(),
   findOneOrFail: jest.fn(),
   delete: jest.fn(),
+  getOne: jest.fn(),
+  getMany: jest.fn(),
+  leftJoin: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  andWhere: jest.fn().mockReturnThis(),
+  orderBy: jest.fn().mockReturnThis(),
+  take: jest.fn().mockReturnThis(),
+  skip: jest.fn().mockReturnThis(),
+  createQueryBuilder: jest.fn().mockReturnThis(),
 });
 
 const mockJwtService = () => ({
@@ -27,6 +36,9 @@ type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 describe('UserService', () => {
   let service: UserService;
   let usersRepository: MockRepository<User>;
+  let userSchoolManageRepository: MockRepository<UserSchoolManage>;
+  let userSchoolFollowRepository: MockRepository<UserSchoolFollow>;
+
   let jwtService: JwtService;
 
   beforeEach(async () => {
@@ -62,6 +74,12 @@ describe('UserService', () => {
     service = module.get<UserService>(UserService);
     jwtService = module.get<JwtService>(JwtService);
     usersRepository = module.get(getRepositoryToken(User));
+    userSchoolManageRepository = module.get(
+      getRepositoryToken(UserSchoolManage),
+    );
+    userSchoolFollowRepository = module.get(
+      getRepositoryToken(UserSchoolFollow),
+    );
   });
 
   it('should be defined', () => {
@@ -174,4 +192,39 @@ describe('UserService', () => {
       expect(result).toEqual({ ok: false, error: 'User Not Found' });
     });
   });
+
+  describe('isManagingSchool', () => {
+    const isManagingSchoolArgs = {
+      userId: 1,
+      schoolId: 1,
+    };
+
+    it('should true if user manage a school', async () => {
+      userSchoolManageRepository
+        .createQueryBuilder()
+        .where('userId = :userId', { userId: isManagingSchoolArgs.userId })
+        .andWhere('schoolId= :schoolId', {
+          schoolId: isManagingSchoolArgs.schoolId,
+        })
+        .getOne.mockResolvedValue(isManagingSchoolArgs);
+      const result = await service.isManagingSchool(isManagingSchoolArgs);
+      expect(result).toEqual(true);
+    });
+
+    it('should false if user manage a school', async () => {
+      userSchoolManageRepository
+        .createQueryBuilder()
+        .where()
+        .andWhere()
+        .getOne.mockResolvedValue(null);
+
+      const result = await service.isManagingSchool(isManagingSchoolArgs);
+      expect(result).toEqual(false);
+    });
+  });
+
+  it.todo('followSchool');
+  it.todo('unFollowSchool');
+  it.todo('findFollowingSchools');
+  it.todo('findNewsFeeds');
 });
