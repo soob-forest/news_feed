@@ -40,6 +40,7 @@ describe('UserService', () => {
   let schoolRepository: MockRepository<School>;
   let userSchoolManageRepository: MockRepository<UserSchoolManage>;
   let userSchoolFollowRepository: MockRepository<UserSchoolFollow>;
+  let newsRepository: MockRepository<News>;
 
   let jwtService: JwtService;
 
@@ -77,6 +78,7 @@ describe('UserService', () => {
     jwtService = module.get<JwtService>(JwtService);
     usersRepository = module.get(getRepositoryToken(User));
     schoolRepository = module.get(getRepositoryToken(School));
+    newsRepository = module.get(getRepositoryToken(News));
     userSchoolManageRepository = module.get(
       getRepositoryToken(UserSchoolManage),
     );
@@ -383,5 +385,67 @@ describe('UserService', () => {
       });
     });
   });
-  it.todo('findNewsFeeds');
+  describe('findNewsFeeds', () => {
+    const user = new User();
+    user.id = 1;
+
+    const news = [
+      {
+        id: 1,
+        title: '속보1',
+        content: '삼일초등학교 우승',
+      },
+      {
+        id: 2,
+        name: '속보2',
+        address: '울산초등학교 우승',
+      },
+    ];
+
+    it("should success get following school's news", async () => {
+      newsRepository
+        .createQueryBuilder('news')
+        .leftJoin('news.school', 'school')
+        .leftJoin('school.userSchoolFollow', 'userSchoolFollow')
+        .where('userSchoolFollow.userId = :userId', { userId: user.id })
+        .andWhere('userSchoolFollow.startDatetime <= news.CreatedAt')
+        .andWhere(
+          'IF( userSchoolFollow.cancelDatetime IS NOT NULL, userSchoolFollow.cancelDatetime > news.CreatedAt, true)',
+        )
+        .orderBy('news.createdAt', 'DESC')
+        .take()
+        .skip()
+        .getMany.mockResolvedValue(news);
+
+      const result = await service.findNewsFeeds(user, { page: 1 });
+
+      expect(result).toEqual({
+        ok: true,
+        news,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      newsRepository
+        .createQueryBuilder('news')
+        .leftJoin('news.school', 'school')
+        .leftJoin('school.userSchoolFollow', 'userSchoolFollow')
+        .where('userSchoolFollow.userId = :userId', { userId: user.id })
+        .andWhere('userSchoolFollow.startDatetime <= news.CreatedAt')
+        .andWhere(
+          'IF( userSchoolFollow.cancelDatetime IS NOT NULL, userSchoolFollow.cancelDatetime > news.CreatedAt, true)',
+        )
+        .orderBy('news.createdAt', 'DESC')
+        .take()
+        .skip()
+        .getMany.mockRejectedValue(new Error());
+
+      const result = await service.findNewsFeeds(user, { page: 1 });
+
+      expect(result).toEqual({
+        ok: false,
+        error: "Cat't Find News Feeds",
+      });
+    });
+  });
 });
