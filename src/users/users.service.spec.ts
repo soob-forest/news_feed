@@ -249,7 +249,7 @@ describe('UserService', () => {
         id: 1,
         isCancel: false,
       };
-      schoolRepository.findOneOrFail.mockResolvedValue(school);
+      schoolRepository.findOne.mockResolvedValue(school);
       userSchoolFollowRepository.create.mockReturnValue(userSchoolFollowArgs);
       userSchoolFollowRepository.save.mockResolvedValue(userSchoolFollowArgs);
 
@@ -259,12 +259,79 @@ describe('UserService', () => {
     });
 
     it('should fail on exception', async () => {
-      schoolRepository.findOneOrFail.mockRejectedValue(new Error());
+      schoolRepository.findOne.mockRejectedValue(new Error());
       const result = await service.followSchool(new User(), followSchoolArgs);
       expect(result).toEqual({ ok: false, error: "Can't follow school" });
     });
   });
-  it.todo('unFollowSchool');
+
+  describe('unFollowSchool', () => {
+    const unFollowSchoolArgs = {
+      schoolId: 1,
+    };
+
+    it('should fail if school not exists', async () => {
+      schoolRepository.findOne.mockResolvedValue(null);
+      const result = await service.unFollowSchool(
+        new User(),
+        unFollowSchoolArgs,
+      );
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'There is no school',
+      });
+    });
+
+    it('should fail if follow school not exists', async () => {
+      schoolRepository.findOne.mockResolvedValue(unFollowSchoolArgs);
+
+      userSchoolFollowRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.unFollowSchool(
+        new User(),
+        unFollowSchoolArgs,
+      );
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'Not found follow',
+      });
+    });
+
+    it('should unfollow a school', async () => {
+      const school = {
+        id: 1,
+        name: 'test',
+        address: '울산',
+      };
+      const userSchoolFollowArgs = {
+        schoolId: 1,
+      };
+
+      const userSchoolFollow = new UserSchoolFollow();
+      userSchoolFollow.isCancel = false;
+
+      schoolRepository.findOne.mockResolvedValue(school);
+      userSchoolFollowRepository.findOne.mockResolvedValue(userSchoolFollow);
+
+      const result = await service.unFollowSchool(
+        new User(),
+        userSchoolFollowArgs,
+      );
+
+      expect(true).toEqual(userSchoolFollow.isCancel);
+
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('should fail on exception', async () => {
+      schoolRepository.findOne.mockRejectedValue(new Error());
+      const result = await service.unFollowSchool(
+        new User(),
+        unFollowSchoolArgs,
+      );
+      expect(result).toEqual({ ok: false, error: "Can't unFollow school" });
+    });
+  });
   it.todo('findFollowingSchools');
   it.todo('findNewsFeeds');
 });
