@@ -143,6 +143,48 @@ describe('SchoolService', () => {
       });
     });
   });
-  it.todo('updateSchool');
+  describe('updateSchool', () => {
+    const school = {
+      id: 1,
+      name: '삼일초',
+      address: '울산광역시',
+    };
+
+    const updatedSchoolArgs = {
+      schoolId: 1,
+      name: '울산초',
+      address: '울산광역시',
+    };
+    it('should fail if school not exists', async () => {
+      schoolRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.updateSchool(updatedSchoolArgs);
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'There is no school',
+      });
+    });
+
+    it('should update a school', async () => {
+      schoolRepository.findOne.mockResolvedValue(school);
+
+      const result = await service.updateSchool(updatedSchoolArgs);
+      expect(result).toMatchObject({
+        ok: true,
+        schoolId: updatedSchoolArgs.schoolId,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      schoolRepository.findOne.mockRejectedValue(new Error());
+
+      const result = await service.updateSchool(updatedSchoolArgs);
+
+      expect(result).toMatchObject({
+        ok: false,
+        error: "Can't update school",
+      });
+    });
+  });
   it.todo('deleteSchool');
 });
