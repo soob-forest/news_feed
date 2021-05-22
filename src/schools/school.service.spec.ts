@@ -3,6 +3,7 @@ import { getRepositoryToken, getConnectionToken } from '@nestjs/typeorm';
 import { School } from 'src/schools/entities/schools.entity';
 import { SchoolService } from 'src/schools/school.service';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
+import { User } from 'src/users/entities/users.entity';
 import { Connection, Repository } from 'typeorm';
 
 const mockRepository = () => ({
@@ -23,23 +24,32 @@ const mockRepository = () => ({
 });
 
 const mockConnection = () => ({
-  createQueryRunner: () => ({
-    queryRunner: {
-      connect: '',
-      startTransaction: '',
-      queryRunner: {
-        manager: mockRepository,
-      },
-    },
-  }),
+  connect: jest.fn(),
+  startTransaction: jest.fn(),
+  manager: {
+    findOne: jest.fn(),
+    save: jest.fn(),
+    create: jest.fn(),
+    findOneOrFail: jest.fn(),
+    delete: jest.fn(),
+    getOne: jest.fn(),
+    getMany: jest.fn(),
+  },
+  commitTransaction: jest.fn(),
+  rollbackTransaction: jest.fn(),
+  release: jest.fn(),
+  createQueryRunner: jest.fn().mockReturnThis(),
 });
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
+type MockConnection = Partial<Record<keyof Connection, jest.Mock>>;
 
 describe('SchoolService', () => {
   let service: SchoolService;
   let schoolRepository: MockRepository<School>;
   let userSchoolManageRepository: MockRepository<UserSchoolManage>;
+  let connection: MockConnection;
+
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
@@ -53,7 +63,7 @@ describe('SchoolService', () => {
           useValue: mockRepository(),
         },
         {
-          provide: Connection,
+          provide: getConnectionToken(),
           useValue: mockConnection(),
         },
       ],
@@ -63,6 +73,7 @@ describe('SchoolService', () => {
     userSchoolManageRepository = module.get(
       getRepositoryToken(UserSchoolManage),
     );
+    connection = module.get(Connection);
   });
 
   it('should be defined', () => {
@@ -85,7 +96,53 @@ describe('SchoolService', () => {
       expect(result).toEqual({ ok: false, error: 'School Not Found' });
     });
   });
-  it.todo('createSchool');
+  describe('createSchool', () => {
+    const user = new User();
+    const schoolArgs = { name: '삼일초', address: '울산' };
+
+    it('should fail if school exists', async () => {
+      schoolRepository.findOne.mockResolvedValue({
+        id: 1,
+        name: '삼일초',
+        address: '울산',
+      });
+
+      const result = await service.createSchool(user, schoolArgs);
+
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'There is school already',
+      });
+    });
+
+    it('should create a new school', async () => {
+      schoolRepository.findOne.mockResolvedValue(null);
+
+      schoolRepository.create.mockReturnValue({ id: 1, ...schoolArgs });
+
+      const queryRunner = connection.createQueryRunner();
+
+      queryRunner.manager.save.mockResolvedValue({ id: 1, ...schoolArgs });
+
+      const result = await service.createSchool(user, schoolArgs);
+
+      expect(result).toMatchObject({
+        ok: true,
+        schoolId: 1,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      schoolRepository.findOne.mockRejectedValue(new Error());
+
+      const result = await service.createSchool(user, schoolArgs);
+
+      expect(result).toMatchObject({
+        ok: false,
+        error: "Can't create school",
+      });
+    });
+  });
   it.todo('updateSchool');
   it.todo('deleteSchool');
 });
