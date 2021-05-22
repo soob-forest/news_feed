@@ -113,6 +113,44 @@ describe('NewsService', () => {
       expect(result).toEqual({ ok: false, error: "Can't create school" });
     });
   });
-  it.todo('updateNews');
+  describe('updateNews', () => {
+    const news = {
+      id: 1,
+      title: 'title',
+      content: 'content',
+    };
+
+    const updatedNewsArgs = {
+      newsId: 1,
+      title: 'title',
+      content: 'updated content',
+    };
+
+    it('should fail if news not exists', async () => {
+      newsRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.updateNews(updatedNewsArgs);
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'not found news',
+      });
+    });
+
+    it('should update a news', async () => {
+      newsRepository.findOne.mockResolvedValue(news);
+
+      const result = await service.updateNews(updatedNewsArgs);
+      expect(result).toMatchObject({
+        ok: true,
+        newsId: updatedNewsArgs.newsId,
+      });
+    });
+
+    it('should fail on exception ', async () => {
+      newsRepository.findOne.mockRejectedValue(new Error());
+      const result = await service.updateNews(updatedNewsArgs);
+      expect(result).toEqual({ ok: false, error: "Can't update news" });
+    });
+  });
   it.todo('deleteNews');
 });
