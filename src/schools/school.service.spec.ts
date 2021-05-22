@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken, getConnectionToken } from '@nestjs/typeorm';
 import { School } from 'src/schools/entities/schools.entity';
 import { SchoolService } from 'src/schools/school.service';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 
 const mockRepository = () => ({
   findOne: jest.fn(),
@@ -22,13 +22,24 @@ const mockRepository = () => ({
   createQueryBuilder: jest.fn().mockReturnThis(),
 });
 
+const mockConnection = () => ({
+  createQueryRunner: () => ({
+    queryRunner: {
+      connect: '',
+      startTransaction: '',
+      queryRunner: {
+        manager: mockRepository,
+      },
+    },
+  }),
+});
+
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('SchoolService', () => {
   let service: SchoolService;
   let schoolRepository: MockRepository<School>;
   let userSchoolManageRepository: MockRepository<UserSchoolManage>;
-
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
@@ -41,6 +52,10 @@ describe('SchoolService', () => {
           provide: getRepositoryToken(UserSchoolManage),
           useValue: mockRepository(),
         },
+        {
+          provide: Connection,
+          useValue: mockConnection(),
+        },
       ],
     }).compile();
     service = module.get<SchoolService>(SchoolService);
@@ -50,8 +65,27 @@ describe('SchoolService', () => {
     );
   });
 
-  it.todo('findById', () => {});
-  it.todo('createSchool', () => {});
-  it.todo('updateSchool', () => {});
-  it.todo('deleteSchool', () => {});
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('findById', () => {
+    const findByIdArgs = {
+      id: 1,
+    };
+    it('should find an existing school', async () => {
+      schoolRepository.findOneOrFail.mockResolvedValue(findByIdArgs);
+      const result = await service.findById(findByIdArgs.id);
+      expect(result).toEqual({ ok: true, school: findByIdArgs });
+    });
+
+    it('should fail if no school is found', async () => {
+      schoolRepository.findOneOrFail.mockRejectedValue(new Error());
+      const result = await service.findById(1);
+      expect(result).toEqual({ ok: false, error: 'School Not Found' });
+    });
+  });
+  it.todo('createSchool');
+  it.todo('updateSchool');
+  it.todo('deleteSchool');
 });
