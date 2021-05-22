@@ -36,6 +36,7 @@ type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 describe('UserService', () => {
   let service: UserService;
   let usersRepository: MockRepository<User>;
+  let schoolRepository: MockRepository<School>;
   let userSchoolManageRepository: MockRepository<UserSchoolManage>;
   let userSchoolFollowRepository: MockRepository<UserSchoolFollow>;
 
@@ -74,6 +75,7 @@ describe('UserService', () => {
     service = module.get<UserService>(UserService);
     jwtService = module.get<JwtService>(JwtService);
     usersRepository = module.get(getRepositoryToken(User));
+    schoolRepository = module.get(getRepositoryToken(School));
     userSchoolManageRepository = module.get(
       getRepositoryToken(UserSchoolManage),
     );
@@ -223,7 +225,45 @@ describe('UserService', () => {
     });
   });
 
-  it.todo('followSchool');
+  describe('followSchool', () => {
+    const followSchoolArgs = {
+      schoolId: 1,
+    };
+
+    it('should fail if school not exists', async () => {
+      schoolRepository.findOne.mockResolvedValue(null);
+      const result = await service.followSchool(new User(), followSchoolArgs);
+      expect(result).toMatchObject({
+        ok: false,
+        error: 'There is no school',
+      });
+    });
+
+    it('should follow a school', async () => {
+      const school = {
+        id: 1,
+        name: 'test',
+        address: '울산',
+      };
+      const userSchoolFollowArgs = {
+        id: 1,
+        isCancel: false,
+      };
+      schoolRepository.findOneOrFail.mockResolvedValue(school);
+      userSchoolFollowRepository.create.mockReturnValue(userSchoolFollowArgs);
+      userSchoolFollowRepository.save.mockResolvedValue(userSchoolFollowArgs);
+
+      const result = await service.followSchool(new User(), followSchoolArgs);
+
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('should fail on exception', async () => {
+      schoolRepository.findOneOrFail.mockRejectedValue(new Error());
+      const result = await service.followSchool(new User(), followSchoolArgs);
+      expect(result).toEqual({ ok: false, error: "Can't follow school" });
+    });
+  });
   it.todo('unFollowSchool');
   it.todo('findFollowingSchools');
   it.todo('findNewsFeeds');
