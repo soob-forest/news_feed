@@ -186,5 +186,28 @@ describe('SchoolService', () => {
       });
     });
   });
-  it.todo('deleteSchool');
+  describe('deleteSchool', () => {
+    const deleteSchoolArg = {
+      schoolId: 1,
+    };
+
+    it('should delete a school', async () => {
+      schoolRepository.delete.mockResolvedValue(null);
+      const result = await service.deleteSchool(deleteSchoolArg);
+      expect(result).toMatchObject({
+        ok: true,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      schoolRepository.delete.mockRejectedValue(new Error());
+
+      const result = await service.deleteSchool(deleteSchoolArg);
+
+      expect(result).toMatchObject({
+        ok: false,
+        error: "Can't delete school",
+      });
+    });
+  });
 });
