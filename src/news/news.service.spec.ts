@@ -38,11 +38,11 @@ describe('NewsService', () => {
     const module = await Test.createTestingModule({
       providers: [
         NewsService,
-        { provide: SchoolService, useValue: mockSchoolService() },
         {
           provide: getRepositoryToken(News),
           useValue: mockRepository(),
         },
+        { provide: SchoolService, useValue: mockSchoolService() },
       ],
     }).compile();
     service = module.get<NewsService>(NewsService);
@@ -53,7 +53,22 @@ describe('NewsService', () => {
     expect(service).toBeDefined();
   });
 
-  it.todo('findById');
+  describe('findById', () => {
+    const findByIdArgs = {
+      id: 1,
+    };
+    it('should find an existing news', async () => {
+      newsRepository.findOneOrFail.mockResolvedValue(findByIdArgs);
+      const result = await service.findById(findByIdArgs.id);
+      expect(result).toEqual({ ok: true, news: findByIdArgs });
+    });
+
+    it('should fail if no news is found', async () => {
+      newsRepository.findOneOrFail.mockRejectedValue(new Error());
+      const result = await service.findById(1);
+      expect(result).toEqual({ ok: false, error: 'News Not Found' });
+    });
+  });
   it.todo('createNews');
   it.todo('updateNews');
   it.todo('deleteNews');
