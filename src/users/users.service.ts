@@ -118,7 +118,7 @@ export class UserService {
     { schoolId }: FollowSchoolInput,
   ): Promise<FollowSchoolOutput> {
     try {
-      const school = await this.school.findOneOrFail({ id: schoolId });
+      const school = await this.school.findOne({ id: schoolId });
 
       if (!school) {
         return { ok: false, error: 'There is no school' };
