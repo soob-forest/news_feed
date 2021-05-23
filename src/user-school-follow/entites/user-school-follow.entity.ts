@@ -45,4 +45,9 @@ export class UserSchoolFollow {
     this.isCancel = true;
     this.cancelDatetime = new Date();
   }
+
+  reFollow() {
+    this.isCancel = false;
+    this.cancelDatetime = null;
+  }
 }
