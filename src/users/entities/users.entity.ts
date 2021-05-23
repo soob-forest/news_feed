@@ -60,7 +60,7 @@ export class User extends CoreEntity {
   )
   userSchoolFollow: UserSchoolFollow[];
 
-  @Field((type) => [School], { nullable: true })
+  @Field((type) => [News], { nullable: true })
   @OneToMany((type) => News, (news) => news.user)
   writingNews: News[];
 
