@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { News } from 'src/news/entites/news.entity';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
 import { User } from 'src/users/entities/users.entity';
 import { Connection, Repository } from 'typeorm';
@@ -11,6 +12,7 @@ import {
   DeleteSchoolInput,
   DeleteSchoolOutput,
 } from './dtos/delete-school.dto';
+import { NewsOutput } from './dtos/news.dto';
 import { SchoolOutput } from './dtos/school.dto';
 import {
   UpdateSchoolInput,
@@ -24,6 +26,7 @@ export class SchoolService {
     @InjectRepository(School) private readonly school: Repository<School>,
     @InjectRepository(UserSchoolManage)
     private readonly userSchoolManage: Repository<UserSchoolManage>,
+    @InjectRepository(News) private readonly news: Repository<News>,
     private readonly connection: Connection,
   ) {}
 
@@ -121,6 +124,29 @@ export class SchoolService {
       return {
         ok: false,
         error: "Can't delete school",
+      };
+    }
+  }
+
+  async findNews(school: School, { page }): Promise<NewsOutput> {
+    try {
+      const news = await this.news.find({
+        relations: ['school'],
+        where: {
+          school,
+        },
+        skip: page * 30,
+        take: 30,
+      });
+
+      return {
+        news,
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: "Can't find news",
       };
     }
   }
