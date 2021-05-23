@@ -27,6 +27,7 @@ JWT_SECRET=
 JWT_EXPIRATION_TIME=
 ```
 
+### 실행
 ```bash
 $ npm run start
 
