@@ -124,6 +124,15 @@ export class UserService {
         return { ok: false, error: 'There is no school' };
       }
 
+      const exists = await this.userSchoolFollow.findOne({ user, school });
+      if (exists) {
+        exists.reFollow();
+        await this.userSchoolFollow.save(exists);
+        return {
+          ok: true,
+        };
+      }
+
       await this.userSchoolFollow.save(
         this.userSchoolFollow.create({ user, school }),
       );
