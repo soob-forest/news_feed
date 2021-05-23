@@ -230,4 +230,24 @@ export class UserService {
       return { ok: false, error: "Cat't Find News Feeds" };
     }
   }
+
+  async findWritingNews(user: User, { page }): Promise<NewsFeedsOutput> {
+    try {
+      const news = await this.news.find({
+        relations: ['school'],
+        where: {
+          user,
+        },
+        skip: page * 30,
+        take: 30,
+      });
+
+      return {
+        ok: true,
+        news,
+      };
+    } catch (error) {
+      return { ok: false, error: "Cat't Find Writing News" };
+    }
+  }
 }
