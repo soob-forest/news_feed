@@ -11,6 +11,7 @@ import { UserService } from './users.service';
 
 const mockRepository = () => ({
   findOne: jest.fn(),
+  find: jest.fn(),
   save: jest.fn(),
   create: jest.fn(),
   findOneOrFail: jest.fn(),
@@ -514,16 +515,16 @@ describe('UserService', () => {
         ok: true,
         news,
       });
+    });
 
-      it('should fail on exception', async () => {
-        newsRepository.find.mockRejectedValue(new Error());
+    it('should fail on exception', async () => {
+      newsRepository.find.mockRejectedValue(new Error());
 
-        const result = await service.findManagingSchools(user);
+      const result = await service.findWritingNews(user, { page: 0 });
 
-        expect(result).toEqual({
-          ok: false,
-          error: "Cat't Find Writing News",
-        });
+      expect(result).toEqual({
+        ok: false,
+        error: "Cat't Find Writing News",
       });
     });
   });

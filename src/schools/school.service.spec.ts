@@ -9,6 +9,7 @@ import { Connection, Repository } from 'typeorm';
 
 const mockRepository = () => ({
   findOne: jest.fn(),
+  find: jest.fn(),
   save: jest.fn(),
   create: jest.fn(),
   findOneOrFail: jest.fn(),
@@ -61,6 +62,10 @@ describe('SchoolService', () => {
         },
         {
           provide: getRepositoryToken(News),
+          useValue: mockRepository(),
+        },
+        {
+          provide: getRepositoryToken(UserSchoolManage),
           useValue: mockRepository(),
         },
         {
@@ -236,7 +241,7 @@ describe('SchoolService', () => {
     });
 
     it('should fail on exception', async () => {
-      schoolRepository.find.mockRejectedValue(new Error());
+      newsRepository.find.mockRejectedValue(new Error());
 
       const result = await service.findNews(school, { page: 0 });
 
