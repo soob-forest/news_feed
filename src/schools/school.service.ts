@@ -27,14 +27,14 @@ export class SchoolService {
     private readonly connection: Connection,
   ) {}
 
-  async findById(id:number): Promise<SchoolOutput>{
-    try{
-      const school = await this.school.findOneOrFail({id})
-      return{
-        ok:true,
-        school
-      }
-    }catch(error){
+  async findById(id: number): Promise<SchoolOutput> {
+    try {
+      const school = await this.school.findOneOrFail({ id });
+      return {
+        ok: true,
+        school,
+      };
+    } catch (error) {
       return { ok: false, error: 'School Not Found' };
     }
   }
@@ -86,6 +86,10 @@ export class SchoolService {
       const school = await this.school.findOne({
         id: updateSchoolInput.schoolId,
       });
+
+      if (!school) {
+        return { ok: false, error: 'There is no school' };
+      }
 
       await this.school.save({
         id: school.id,
