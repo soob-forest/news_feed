@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken, getConnectionToken } from '@nestjs/typeorm';
+import { News } from 'src/news/entites/news.entity';
 import { School } from 'src/schools/entities/schools.entity';
 import { SchoolService } from 'src/schools/school.service';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
@@ -47,7 +48,7 @@ type MockConnection = Partial<Record<keyof Connection, jest.Mock>>;
 describe('SchoolService', () => {
   let service: SchoolService;
   let schoolRepository: MockRepository<School>;
-  let userSchoolManageRepository: MockRepository<UserSchoolManage>;
+  let newsRepository: MockRepository<News>;
   let connection: MockConnection;
 
   beforeEach(async () => {
@@ -59,7 +60,7 @@ describe('SchoolService', () => {
           useValue: mockRepository(),
         },
         {
-          provide: getRepositoryToken(UserSchoolManage),
+          provide: getRepositoryToken(News),
           useValue: mockRepository(),
         },
         {
@@ -70,9 +71,7 @@ describe('SchoolService', () => {
     }).compile();
     service = module.get<SchoolService>(SchoolService);
     schoolRepository = module.get(getRepositoryToken(School));
-    userSchoolManageRepository = module.get(
-      getRepositoryToken(UserSchoolManage),
-    );
+    newsRepository = module.get(getRepositoryToken(News));
     connection = module.get(Connection);
   });
 
@@ -207,6 +206,43 @@ describe('SchoolService', () => {
       expect(result).toMatchObject({
         ok: false,
         error: "Can't delete school",
+      });
+    });
+  });
+
+  describe('findByNews', () => {
+    const news = [
+      {
+        id: 1,
+        title: 'title1',
+        content: 'content1',
+      },
+      {
+        id: 2,
+        title: 'title2',
+        content: 'content2',
+      },
+    ];
+
+    const school = new School();
+
+    it('should get news', async () => {
+      newsRepository.find.mockResolvedValue(news);
+      const result = await service.findNews(school, { page: 0 });
+      expect(result).toMatchObject({
+        ok: true,
+        news,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      schoolRepository.find.mockRejectedValue(new Error());
+
+      const result = await service.findNews(school, { page: 0 });
+
+      expect(result).toMatchObject({
+        ok: false,
+        error: "Can't find news",
       });
     });
   });
