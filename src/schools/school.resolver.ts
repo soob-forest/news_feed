@@ -12,6 +12,7 @@ import {
   DeleteSchoolInput,
   DeleteSchoolOutput,
 } from './dtos/delete-school.dto';
+import { SchoolOutput } from './dtos/school.dto';
 import {
   UpdateSchoolInput,
   UpdateSchoolOutput,
@@ -48,5 +49,10 @@ export class SchoolResolver {
     @Args('input') deleteSchoolInput: DeleteSchoolInput,
   ): Promise<DeleteSchoolOutput> {
     return this.schoolService.deleteSchool(deleteSchoolInput);
+  }
+
+  @Query((returns) => SchoolOutput)
+  school(@Args('id') id: number): Promise<SchoolOutput> {
+    return this.schoolService.findById(id);
   }
 }
