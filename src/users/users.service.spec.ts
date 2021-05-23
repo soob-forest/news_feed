@@ -3,7 +3,6 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { News } from 'src/news/entites/news.entity';
 import { School } from 'src/schools/entities/schools.entity';
-import { SchoolService } from 'src/schools/school.service';
 import { UserSchoolFollow } from 'src/user-school-follow/entites/user-school-follow.entity';
 import { UserSchoolManage } from 'src/user-school-manage/entites/user-school-manage.entity';
 import { Repository } from 'typeorm';
@@ -445,6 +444,86 @@ describe('UserService', () => {
       expect(result).toEqual({
         ok: false,
         error: "Cat't Find News Feeds",
+      });
+    });
+  });
+
+  describe('findManagingSchools', () => {
+    const user = new User();
+    user.id = 1;
+
+    const schools = [
+      {
+        id: 1,
+        name: '성신고',
+        address: '울산광역시',
+      },
+      {
+        id: 2,
+        name: '울산고',
+        address: '울산광역시',
+      },
+    ];
+
+    it('should success get managing schools', async () => {
+      schoolRepository
+        .createQueryBuilder()
+        .leftJoin('school.userSchoolManage', 'userSchoolManage')
+        .where('userSchoolManage.userId = :userId', { userId: user.id })
+        .getMany.mockResolvedValue(schools);
+
+      const result = await service.findManagingSchools(user);
+
+      expect(result).toMatchObject({
+        ok: true,
+        schools,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      schoolRepository
+        .createQueryBuilder()
+        .leftJoin('school.userSchoolManage', 'userSchoolManage')
+        .where('userSchoolManage.userId = :userId', { userId: user.id })
+        .getMany.mockRejectedValue(new Error());
+
+      const result = await service.findManagingSchools(user);
+
+      expect(result).toEqual({
+        ok: false,
+        error: "Can't find Managing Schools",
+      });
+    });
+  });
+
+  describe('findWritingNews', () => {
+    const user = new User();
+    user.id = 1;
+    const news = [
+      { title: 'title1', content: 'content1' },
+      {
+        title: 'title2',
+        content: 'content2',
+      },
+    ];
+    it('should sucess get writing news', async () => {
+      newsRepository.find.mockResolvedValue(news);
+
+      const result = await service.findWritingNews(user, { page: 0 });
+      expect(result).toMatchObject({
+        ok: true,
+        news,
+      });
+
+      it('should fail on exception', async () => {
+        newsRepository.find.mockRejectedValue(new Error());
+
+        const result = await service.findManagingSchools(user);
+
+        expect(result).toEqual({
+          ok: false,
+          error: "Cat't Find Writing News",
+        });
       });
     });
   });
