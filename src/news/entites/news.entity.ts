@@ -1,6 +1,6 @@
 import { ObjectType, Field, InputType } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, ManyToOne } from 'typeorm';
 import { IsString } from 'class-validator';
 import { School } from 'src/schools/entities/schools.entity';
 import { User } from 'src/users/entities/users.entity';
@@ -8,6 +8,7 @@ import { User } from 'src/users/entities/users.entity';
 @InputType('NewsInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
+@Index(['createdAt'])
 export class News extends CoreEntity {
   @Column()
   @Field((type) => String)

@@ -22,7 +22,7 @@ export class School extends CoreEntity {
   address: string;
 
   @OneToMany((type) => News, (news) => news.school)
-  @Field((type) => [News])
+  @Field((type) => [News], { nullable: true })
   news: News[];
 
   @OneToMany(
