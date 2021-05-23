@@ -1,12 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import {
-  Resolver,
-  Query,
-  Args,
-  Mutation,
-  ResolveField,
-  Parent,
-} from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { NewsGuard } from 'src/auth/auth-news.guard';
 import { UserRole } from 'src/auth/auth-role.decorator';
 import { SchoolManagerGuard } from 'src/auth/auth-school-manager.guard';
@@ -14,6 +7,7 @@ import { AuthUser } from 'src/auth/auth-user.decorator';
 import { User } from 'src/users/entities/users.entity';
 import { CreateNewsInput, CreateNewsOutput } from './dtos/create-news.dto';
 import { DeleteNewsInput, DeleteNewsOutput } from './dtos/delete-news.dto';
+import { NewsOutput } from './dtos/news.dto';
 import { UpdateNewsInput, UpdateNewsOutput } from './dtos/update-news.dto';
 import { News } from './entites/news.entity';
 import { NewsService } from './news.service';
@@ -48,5 +42,9 @@ export class NewsResolver {
     @Args('input') deleteNewsInput: DeleteNewsInput,
   ): Promise<DeleteNewsOutput> {
     return this.newsService.deleteNews(deleteNewsInput);
+  }
+  @Query((returns) => NewsOutput)
+  async news(@Args('newsId') id: number): Promise<NewsOutput> {
+    return this.newsService.findById(id);
   }
 }
