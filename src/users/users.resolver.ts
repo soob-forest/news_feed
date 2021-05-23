@@ -87,4 +87,10 @@ export class UserResolver {
     });
     return news;
   }
+
+  @ResolveField()
+  async managingSchools(@Parent() user: User): Promise<School[]> {
+    const { schools } = await this.userService.findManagingSchools(user);
+    return schools;
+  }
 }
