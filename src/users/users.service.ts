@@ -25,6 +25,7 @@ import { UserProfileOutput } from './dtos/user-profile.dto';
 import { NewsFeedsOutput } from './dtos/news.dto';
 
 import { User } from './entities/users.entity';
+import { ManagingSchoolOutput } from './dtos/managing-school.dto';
 
 @Injectable()
 export class UserService {
@@ -185,6 +186,23 @@ export class UserService {
       };
     } catch (error) {
       return { ok: false, error: "Can't find Follwing Schools" };
+    }
+  }
+
+  async findManagingSchools(user: User): Promise<ManagingSchoolOutput> {
+    try {
+      const schools = await this.school
+        .createQueryBuilder('school')
+        .leftJoin('school.userSchoolManage', 'userSchoolManage')
+        .where('userSchoolManage.userId = :userId', { userId: user.id })
+        .getMany();
+
+      return {
+        ok: true,
+        schools,
+      };
+    } catch (error) {
+      return { ok: false, error: "Can't find Managing Schools" };
     }
   }
 
