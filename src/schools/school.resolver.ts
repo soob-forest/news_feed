@@ -1,5 +1,12 @@
 import { UseGuards } from '@nestjs/common';
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Args,
+  Mutation,
+  Parent,
+  ResolveField,
+} from '@nestjs/graphql';
 import { UserRole } from 'src/auth/auth-role.decorator';
 import { SchoolManagerGuard } from 'src/auth/auth-school-manager.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
@@ -19,6 +26,7 @@ import {
 } from './dtos/update-school.dto';
 import { School } from './entities/schools.entity';
 import { SchoolService } from './school.service';
+import { News } from 'src/news/entites/news.entity';
 
 @Resolver((of) => School)
 export class SchoolResolver {
@@ -52,7 +60,16 @@ export class SchoolResolver {
   }
 
   @Query((returns) => SchoolOutput)
-  school(@Args('id') id: number): Promise<SchoolOutput> {
+  async school(@Args('schoolId') id: number): Promise<SchoolOutput> {
     return this.schoolService.findById(id);
+  }
+
+  @ResolveField()
+  async news(
+    @Parent() school: School,
+    @Args('page', { nullable: true }) page: Number = 0,
+  ): Promise<News[]> {
+    const { news } = await this.schoolService.findNews(school, { page });
+    return news;
   }
 }
